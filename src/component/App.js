@@ -14,7 +14,7 @@ import Footer from "./Footer";
 import Timer from "./Timer";
 import PreviousButton from "./PreviousButton";
 import SkipButton from "./SkipButton";
-const SECS_PER_QUESTION = 100;
+const SECS_PER_QUESTION = 30;
 const initialState = {
   questions: [],
   // loading, error, ready, finished
