@@ -49,6 +49,10 @@ function reducer(state, action) {
           answers: state.answers.map((ans, i) =>
             i === state.index ? action.payload : ans
           ),
+          points:
+            action.payload === question.correctOption
+              ? state.points + question.points
+              : state.points,
         };
       }
       return {
