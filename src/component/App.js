@@ -12,13 +12,16 @@ import Finished from "./Finished";
 import RestartButton from "./RestartButton";
 import Footer from "./Footer";
 import Timer from "./Timer";
-const SECS_PER_QUESTION = 1;
+import PreviousButton from "./PreviousButton";
+import SkipButton from "./SkipButton";
+const SECS_PER_QUESTION = 100;
 const initialState = {
   questions: [],
   // loading, error, ready, finished
   status: "loading",
   index: 0,
-  answer: null,
+  answers: [],
+  curAnswer: null,
   points: 0,
   highestScore: localStorage.getItem("highestScore") || 0,
   remainingSeconds: null,
@@ -38,17 +41,39 @@ function reducer(state, action) {
       };
     case "newAnswer":
       const question = state.questions.at(state.index);
-
+      const currentAnswer = state.answers.at(state.index);
+      if (state.index < state.answers.length) {
+        return {
+          ...state,
+          curAnswer: action.payload,
+          answers: state.answers.map((ans, i) =>
+            i === state.index ? action.payload : ans
+          ),
+        };
+      }
       return {
         ...state,
-        answer: action.payload,
+        answers: [...state.answers, action.payload],
+        curAnswer: action.payload,
         points:
           action.payload === question.correctOption
             ? state.points + question.points
             : state.points,
       };
     case "answered":
-      return { ...state, index: state.index + 1, answer: null };
+      const nextAnswer = state.answers.at(state.index + 1);
+      return {
+        ...state,
+        index: state.index + 1,
+        curAnswer: nextAnswer !== undefined ? nextAnswer : null,
+      };
+    case "previousQuestion":
+      const prevAnswer = state.answers.at(state.index - 1);
+      return {
+        ...state,
+        index: state.index - 1,
+        curAnswer: prevAnswer !== undefined ? prevAnswer : null,
+      };
     case "finish":
       if (state.points > state.highestScore) {
         localStorage.setItem("highestScore", state.points);
@@ -62,6 +87,21 @@ function reducer(state, action) {
         questions: state.questions,
         highestScore: localStorage.getItem("highestScore") || 0, // retains the highest score when restart quiz button is pressed
       };
+    case "skipQuestion":
+      if (state.index < state.answers.length) {
+        return {
+          ...state,
+          index: state.index + 1,
+          curAnswer: state.answers.at(state.index + 1),
+        };
+      } else {
+        return {
+          ...state,
+          index: state.index + 1,
+          answers: [...state.answers, null],
+        };
+      }
+
     case "tick":
       const nextSeconds = state.remainingSeconds - 1;
       if (nextSeconds === 0) {
@@ -92,10 +132,11 @@ export default function App() {
       questions,
       status,
       index,
-      answer,
+      answers,
       points,
       highestScore,
       remainingSeconds,
+      curAnswer,
     },
     dispatch,
   ] = useReducer(reducer, initialState);
@@ -134,18 +175,32 @@ export default function App() {
               totalQuestions={totalQuestions}
               maxPossiblePoints={maxPossiblePoints}
               points={points}
-              answer={answer}
+              answer={curAnswer}
             />
             <Question
               question={questions[index]}
               dispatch={dispatch}
-              answer={answer}
+              answer={curAnswer}
+              curIndex={index}
             />
             <Footer>
               <Timer dispatch={dispatch} remainingSeconds={remainingSeconds} />
+              <SkipButton
+                dispatch={dispatch}
+                totalQuestions={totalQuestions}
+                index={index}
+                answer={curAnswer}
+              />
+
+              <PreviousButton
+                dispatch={dispatch}
+                index={index}
+                totalQuestions={totalQuestions}
+              />
+
               <NextButton
                 dispatch={dispatch}
-                answer={answer}
+                answer={curAnswer}
                 index={index}
                 totalQuestions={totalQuestions}
               />
