@@ -73,10 +73,21 @@ function reducer(state, action) {
       };
     case "previousQuestion":
       const prevAnswer = state.answers.at(state.index - 1);
+      // console.log(prevAnswer);
+      if (state.index === state.answers.length)
+        return {
+          ...state,
+          index: state.index - 1,
+          curAnswer: prevAnswer,
+          answers:
+            state.curAnswer === null
+              ? [...state.answers, null]
+              : [...state.answers],
+        };
       return {
         ...state,
         index: state.index - 1,
-        curAnswer: prevAnswer !== undefined ? prevAnswer : null,
+        curAnswer: prevAnswer,
       };
     case "finish":
       if (state.points > state.highestScore) {
@@ -92,6 +103,8 @@ function reducer(state, action) {
         highestScore: localStorage.getItem("highestScore") || 0, // retains the highest score when restart quiz button is pressed
       };
     case "skipQuestion":
+      console.log(state.index);
+      console.log(state.answers.length);
       if (state.index < state.answers.length) {
         return {
           ...state,
@@ -103,6 +116,7 @@ function reducer(state, action) {
           ...state,
           index: state.index + 1,
           answers: [...state.answers, null],
+          curAnswer: null,
         };
       }
 

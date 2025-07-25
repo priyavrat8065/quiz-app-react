@@ -14,7 +14,7 @@ function SkipButton({ dispatch, index, totalQuestions, answer }) {
         className="btn btn-ui"
         onClick={() => dispatch({ type: "finish" })}
       >
-        Finish
+        Skip
       </button>
     );
 }
