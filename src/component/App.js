@@ -74,16 +74,16 @@ function reducer(state, action) {
     case "previousQuestion":
       const prevAnswer = state.answers.at(state.index - 1);
       // console.log(prevAnswer);
-      if (state.index === state.answers.length)
-        return {
-          ...state,
-          index: state.index - 1,
-          curAnswer: prevAnswer,
-          answers:
-            state.curAnswer === null
-              ? [...state.answers, null]
-              : [...state.answers],
-        };
+      // if (state.index < state.answers.length) console.log("I executed");
+      // return {
+      //   ...state,
+      //   index: state.index - 1,
+      //   curAnswer: prevAnswer,
+      //   answers:
+      //     state.curAnswer === null
+      //       ? [...state.answers, null]
+      //       : [...state.answers],
+      // };
       return {
         ...state,
         index: state.index - 1,
@@ -103,22 +103,24 @@ function reducer(state, action) {
         highestScore: localStorage.getItem("highestScore") || 0, // retains the highest score when restart quiz button is pressed
       };
     case "skipQuestion":
+      const nextIndex = state.index + 1;
       console.log(state.index);
       console.log(state.answers.length);
-      if (state.index < state.answers.length) {
+      // only executed when skip to previously attempted or seen (but not attempted question)
+      if (nextIndex < state.answers.length) {
         return {
           ...state,
-          index: state.index + 1,
-          curAnswer: state.answers.at(state.index + 1),
-        };
-      } else {
-        return {
-          ...state,
-          index: state.index + 1,
-          answers: [...state.answers, null],
-          curAnswer: null,
+          index: nextIndex,
+          curAnswer: state.answers.at(nextIndex),
         };
       }
+      // only executed when we skip to th question we are seeing for the first time
+      return {
+        ...state,
+        index: nextIndex,
+        answers: [...state.answers, null],
+        curAnswer: null,
+      };
 
     case "tick":
       const nextSeconds = state.remainingSeconds - 1;
